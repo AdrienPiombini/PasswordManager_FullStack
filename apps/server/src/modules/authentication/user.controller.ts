@@ -9,14 +9,15 @@ import { UserService } from './user.service';
 import { UserDto } from './dto/userDto';
 
 import { LoginResponse, RegisterResponse } from './user.utils';
+import { RegisterDto } from './dto/registerDto';
 
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Post('/register')
   @UsePipes(ValidationPipe)
-  async register(@Body() userDto: UserDto): Promise<RegisterResponse> {
-    const result = await this.userService.register(userDto);
+  async register(@Body() registerDto: RegisterDto): Promise<RegisterResponse> {
+    const result = await this.userService.register(registerDto);
 
     if (!result['accessToken']) {
       return {

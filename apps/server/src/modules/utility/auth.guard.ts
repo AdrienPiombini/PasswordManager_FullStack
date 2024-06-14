@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JWT_SECRET } from '../authentication/user.utils';
 
@@ -9,7 +14,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      return false;
+      throw new UnauthorizedException('Token is missing');
     }
 
     try {
@@ -17,7 +22,7 @@ export class AuthGuard implements CanActivate {
         secret: JWT_SECRET.secret,
       });
     } catch {
-      return false;
+      throw new UnauthorizedException('Invalid token');
     }
 
     return true;
