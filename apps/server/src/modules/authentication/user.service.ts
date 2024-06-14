@@ -7,6 +7,7 @@ import { UserMapper } from './dto/userMapper';
 import { JwtService } from '@nestjs/jwt';
 import { JWT, RegisterError, SALT } from '../authentication/user.utils';
 import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/registerDto';
 
 @Injectable()
 export class UserService {
@@ -17,13 +18,19 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
-  async register(userDto: UserDto): Promise<JWT | RegisterError> {
-    userDto.user_password = await bcrypt.hash(
-      userDto.user_password,
+  async register(registerDto: RegisterDto): Promise<JWT | RegisterError> {
+    const { user_password, confirm_password } = registerDto;
+    if (user_password !== confirm_password) {
+      return {
+        details: 'passwords do not match',
+      };
+    }
+    registerDto.user_password = await bcrypt.hash(
+      registerDto.user_password,
       await SALT,
     );
 
-    const user = this.userMapper.dtoToEntity(userDto);
+    const user = this.userMapper.dtoToEntity(registerDto);
     user.created_at = new Date().toISOString();
 
     try {
@@ -70,7 +77,7 @@ export class UserService {
       sub: user.id,
       name: user.user_credential,
       iat: currentDateInSecond,
-      exp: currentDateInSecond + 600, // + 10 MINUTES
+      exp: currentDateInSecond + 6000, // + 10 MINUTES
     };
   }
 }
